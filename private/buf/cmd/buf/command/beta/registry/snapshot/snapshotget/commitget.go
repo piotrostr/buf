@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package commitlist
+package snapshotget
 
 import (
 	"context"
@@ -28,12 +28,7 @@ import (
 	"github.com/spf13/pflag"
 )
 
-const (
-	pageSizeFlagName  = "page-size"
-	pageTokenFlagName = "page-token"
-	reverseFlagName   = "reverse"
-	formatFlagName    = "format"
-)
+const formatFlagName = "format"
 
 // NewCommand returns a new Command
 func NewCommand(
@@ -42,8 +37,8 @@ func NewCommand(
 ) *appcmd.Command {
 	flags := newFlags()
 	return &appcmd.Command{
-		Use:   name + " <buf.build/owner/module[:ref]>",
-		Short: "List commits.",
+		Use:   name + " <buf.build/owner/module:ref>",
+		Short: "Get details about a commit.",
 		Args:  cobra.ExactArgs(1),
 		Run: builder.NewRunFunc(
 			func(ctx context.Context, container appflag.Container) error {
@@ -56,10 +51,7 @@ func NewCommand(
 }
 
 type flags struct {
-	Format    string
-	PageSize  uint32
-	PageToken string
-	Reverse   bool
+	Format string
 }
 
 func newFlags() *flags {
@@ -67,21 +59,6 @@ func newFlags() *flags {
 }
 
 func (f *flags) Bind(flagSet *pflag.FlagSet) {
-	flagSet.Uint32Var(&f.PageSize,
-		pageSizeFlagName,
-		10,
-		`The page size.`,
-	)
-	flagSet.StringVar(&f.PageToken,
-		pageTokenFlagName,
-		"",
-		`The page token. If more results are available, a "next_page" key is present in the --format=json output.`,
-	)
-	flagSet.BoolVar(&f.Reverse,
-		reverseFlagName,
-		false,
-		`Reverse the results.`,
-	)
 	flagSet.StringVar(
 		&f.Format,
 		formatFlagName,
@@ -113,20 +90,11 @@ func run(
 	if err != nil {
 		return err
 	}
-
-	reference := moduleReference.Reference()
-	if reference == "" {
-		reference = bufmoduleref.Main
-	}
-
-	repositoryCommits, nextPageToken, err := service.ListRepositoryCommitsByReference(
+	repositoryCommit, err := service.GetRepositoryCommitByReference(
 		ctx,
 		moduleReference.Owner(),
 		moduleReference.Repository(),
-		reference,
-		flags.PageSize,
-		flags.PageToken,
-		flags.Reverse,
+		moduleReference.Reference(),
 	)
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
@@ -134,7 +102,5 @@ func run(
 		}
 		return err
 	}
-	return bufprint.NewRepositoryCommitPrinter(
-		container.Stdout(),
-	).PrintRepositoryCommits(ctx, format, nextPageToken, repositoryCommits...)
+	return bufprint.NewRepositoryCommitPrinter(container.Stdout()).PrintRepositoryCommit(ctx, format, repositoryCommit)
 }
