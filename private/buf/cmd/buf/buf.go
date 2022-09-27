@@ -178,8 +178,8 @@ func NewRootCommand(name string) *appcmd.Command {
 								},
 							},
 							{
-								Use:   "commit",
-								Short: "Manage a module's commits.",
+								Use:   "snapshot",
+								Short: "Manage a module's snapshots.",
 								SubCommands: []*appcmd.Command{
 									snapshotget.NewCommand("get", builder),
 									snapshotlist.NewCommand("list", builder),

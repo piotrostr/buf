@@ -175,11 +175,11 @@ func ModuleIdentityForString(path string) (ModuleIdentity, error) {
 type ModuleReference interface {
 	ModuleIdentity
 
-	// Prints either remote/owner/module:{branch,commit}
+	// Prints either remote/owner/module:{branch,snapshot}
 	// If the reference is equal to MainBranch, prints remote/owner/module.
 	fmt.Stringer
 
-	// Either branch, tag, or commit
+	// Either branch, tag, or snapshot
 	Reference() string
 
 	isModuleReference()

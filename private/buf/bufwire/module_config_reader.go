@@ -624,7 +624,7 @@ func (m *moduleConfigReader) getModuleConfig(
 			// The subDirPath isn't a workspace directory, so we can determine the bucketRelPaths
 			// from the sourceRef on its own.
 			buildOptions = []bufmodulebuild.BuildOption{
-				// We can't determine the module's commit from the local file system.
+				// We can't determine the module's snapshot from the local file system.
 				// This also may be nil.
 				//
 				// This is particularly useful for the GoPackage modifier used in
